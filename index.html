@@ -1,0 +1,157 @@
+
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#101827">
+<title>TOM AI Assistant</title>
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;background:#101827;color:#fff;
+ font-family:Arial,sans-serif;
+ min-height:100vh;padding:20px
+}
+.app{max-width:600px;margin:auto}
+header{text-align:center;padding:30px 10px}
+.logo{font-size:55px}
+h1{margin:8px 0;color:#65d6ad}
+.sub{color:#aab7c8;font-size:14px}
+.status{
+ background:#193c36;color:#72e3bb;
+ padding:10px;border-radius:12px;
+ text-align:center;margin:15px 0
+}
+.chat{
+ background:#1c293b;border-radius:16px;
+ padding:15px;min-height:300px;
+ margin-bottom:15px
+}
+.message{
+ background:#293b51;padding:13px;
+ border-radius:12px;margin:10px 0;
+ line-height:1.6;white-space:pre-wrap
+}
+.user{background:#174c42}
+textarea{
+ width:100%;height:85px;border:0;
+ border-radius:12px;padding:14px;
+ font-size:16px;background:#fff;color:#111
+}
+button{
+ border:0;border-radius:12px;padding:14px;
+ font-size:15px;font-weight:bold;cursor:pointer
+}
+.controls{display:flex;gap:8px;margin-top:10px}
+.controls button{flex:1}
+.send{background:#38c99b;color:#10251f}
+.voice{background:#365477;color:white}
+.speak{background:#53617b;color:white}
+.note{
+ color:#aab7c8;font-size:12px;
+ line-height:1.6;margin-top:20px
+}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+<div class="logo">🤖</div>
+<h1>TOM AI</h1>
+<div class="sub">ผู้ช่วยส่วนตัวของคุณ</div>
+</header>
+
+<div class="status">● TOM AI INTERFACE ONLINE</div>
+
+<div class="chat" id="chat">
+<div class="message">
+สวัสดีครับ ผมทอมครับ
+
+ยินดีต้อนรับสู่ TOM AI
+ตอนนี้หน้าระบบพร้อมรับข้อความและเสียงแล้วครับ
+</div>
+</div>
+
+<textarea id="input"
+placeholder="พิมพ์ข้อความ หรือกดปุ่มไมโครโฟน..."></textarea>
+
+<div class="controls">
+<button class="voice" onclick="listen()">🎤 พูด</button>
+<button class="send" onclick="sendMessage()">ส่งข้อความ</button>
+</div>
+
+<div class="controls">
+<button class="speak" onclick="speakLast()">🔊 อ่านคำตอบ</button>
+<button class="speak" onclick="stopSpeak()">หยุดเสียง</button>
+</div>
+
+<div class="note">
+ระบบรุ่นทดลอง: รองรับการพิมพ์ การรับเสียงภาษาไทย
+และการอ่านข้อความออกเสียง
+ขั้นตอนถัดไปจะเชื่อมต่อสมอง AI และระบบความจำบน Cloud
+</div>
+</div>
+
+<script>
+let lastReply = "สวัสดีครับ ผมทอมครับ";
+
+function addMessage(text,type){
+ const chat=document.getElementById("chat");
+ const div=document.createElement("div");
+ div.className="message "+(type==="user"?"user":"");
+ div.textContent=text;
+ chat.appendChild(div);
+ chat.scrollTop=chat.scrollHeight;
+}
+
+function sendMessage(){
+ const input=document.getElementById("input");
+ const text=input.value.trim();
+ if(!text)return;
+ addMessage(text,"user");
+ input.value="";
+ lastReply="ได้รับข้อความแล้วครับ ขณะนี้ยังไม่ได้เชื่อมต่อสมอง AI บน Cloud เราจะดำเนินการเชื่อมต่อในขั้นตอนถัดไปครับ";
+ addMessage(lastReply,"bot");
+}
+
+function listen(){
+ const SpeechRecognition =
+ window.SpeechRecognition || window.webkitSpeechRecognition;
+
+ if(!SpeechRecognition){
+ alert("เบราว์เซอร์นี้ยังไม่รองรับการรับเสียง กรุณาทดลองใช้ Google Chrome");
+ return;
+ }
+
+ const recognition=new SpeechRecognition();
+ recognition.lang="th-TH";
+ recognition.interimResults=false;
+ recognition.onresult=function(event){
+  document.getElementById("input").value=
+  event.results[0][0].transcript;
+ };
+ recognition.onerror=function(){
+  alert("ไม่สามารถรับเสียงได้ กรุณาอนุญาตใช้ไมโครโฟน");
+ };
+ recognition.start();
+}
+
+function speakLast(){
+ if(!("speechSynthesis" in window)){
+  alert("อุปกรณ์นี้ไม่รองรับการอ่านข้อความ");
+  return;
+ }
+ speechSynthesis.cancel();
+ const msg=new SpeechSynthesisUtterance(lastReply);
+ msg.lang="th-TH";
+ msg.rate=1;
+ speechSynthesis.speak(msg);
+}
+
+function stopSpeak(){
+ speechSynthesis.cancel();
+}
+</script>
+</body>
+</html>
